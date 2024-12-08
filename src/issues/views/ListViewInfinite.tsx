@@ -2,14 +2,14 @@ import { useState } from "react";
 import { LoadingSpinner } from "../../shared/components";
 import { IssueList } from "../components/IssueList";
 import { LabelPicker } from "../components/LabelPicker";
-import { useIssues } from "../hooks";
+import { useIssuesInfinite } from "../hooks";
 import { State } from "../interfaces";
 
-export const ListView = () => {
+export const ListViewInfinite = () => {
   const [state, setState] = useState<State>(State.All);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
 
-  const { issuesQuery, page, nextPage, prevPage } = useIssues({
+  const { issuesQuery } = useIssuesInfinite({
     state,
     labels: selectedLabels,
   });
@@ -28,33 +28,21 @@ export const ListView = () => {
         {issuesQuery.isLoading ? (
           <LoadingSpinner />
         ) : (
-          <>
+          <div className="flex flex-col justify-center">
             <IssueList
-              issues={issuesQuery.data ?? []}
+              issues={issuesQuery.data?.pages.flat() ?? []}
               state={state}
               onStateChange={setState}
             />
 
-            <div className="flex justify-between items-center">
-              <button
-                onClick={prevPage}
-                className="p-2 bg-blue-500 rounded-md hover:bg-blue-700 transition-all"
-              >
-                Anteriores
-              </button>
-
-              <span className="text-gray-400">
-                Página {page} 
-              </span>
-
-              <button
-                onClick={nextPage}
-                className="p-2 bg-blue-500 rounded-md hover:bg-blue-700 transition-all"
-              >
-                Siguientes
-              </button>
-            </div>
-          </>
+            <button
+              disabled={issuesQuery.isFetchingNextPage}
+              onClick={() => issuesQuery.fetchNextPage()}
+              className="p-2 bg-blue-500 rounded-md hover:bg-blue-700 transition-all"
+            >
+              {issuesQuery.isFetchingNextPage ? "Cargando..." : "Cargar más..."}
+            </button>
+          </div>
         )}
       </div>
 
